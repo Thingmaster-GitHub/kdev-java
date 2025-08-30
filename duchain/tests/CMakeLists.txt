@@ -15,5 +15,5 @@ target_link_libraries(javaduchaintest
     kdevjavaduchain
     KDevPlatformLanguage
     KDevPlatformTests
-    Qt5::Test
+    Qt6::Test
 )

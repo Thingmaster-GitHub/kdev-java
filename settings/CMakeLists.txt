@@ -14,5 +14,5 @@ set( javasettings_cfg_UI
 ki18n_wrap_ui( javasettings_cfg_SRCS ${javasettings_cfg_UI} )
 kconfig_add_kcfg_files( javasettings_cfg_SRCS javaconfig.kcfgc )
 add_library(kdev_javasettings OBJECT ${javasettings_cfg_SRCS})
-target_link_libraries(kdev_javasettings KDev::Util)
+target_link_libraries(kdev_javasettings KDev::Util KF6::KIOCore KF6::KIOFileWidgets KF6::KIOWidgets)
 

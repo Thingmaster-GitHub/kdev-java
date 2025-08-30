@@ -32,8 +32,8 @@ using namespace KDevelop;
     if(constant)
       *constant = false;
     AbstractType::Ptr base = _base;
-    ReferenceType::Ptr ref = base.cast<ReferenceType>();
-    TypeAliasType::Ptr alias = base.cast<TypeAliasType>();
+    ReferenceType::Ptr ref = base.dynamicCast<ReferenceType>();
+    TypeAliasType::Ptr alias = base.dynamicCast<TypeAliasType>();
 
     while( ref || alias ) {
       uint hadModifiers = base->modifiers();
@@ -45,8 +45,8 @@ using namespace KDevelop;
       if(base)
         base->setModifiers(base->modifiers() | hadModifiers);
 
-      ref = base.cast<ReferenceType>();
-      alias = base.cast<TypeAliasType>();
+      ref = base.dynamicCast<ReferenceType>();
+      alias = base.dynamicCast<TypeAliasType>();
     }
 
     return base;
@@ -55,7 +55,7 @@ using namespace KDevelop;
   AbstractType::Ptr realTypeKeepAliases(const AbstractType::Ptr& _base) {
 
     AbstractType::Ptr base = _base;
-    ReferenceType::Ptr ref = base.cast<ReferenceType>();
+    ReferenceType::Ptr ref = base.dynamicCast<ReferenceType>();
 
     while( ref ) {
       uint hadModifiers = base->modifiers();
@@ -63,18 +63,18 @@ using namespace KDevelop;
       if(base)
         base->setModifiers(base->modifiers() | hadModifiers);
 
-      ref = base.cast<ReferenceType>();
+      ref = base.dynamicCast<ReferenceType>();
     }
 
     return base;
   }
 
   bool isPointerType(const AbstractType::Ptr& type) {
-    return realType(type, 0).cast<PointerType>();
+    return realType(type, 0).dynamicCast<PointerType>();
   }
 
   bool isReferenceType(const AbstractType::Ptr& type) {
-    return type.cast<ReferenceType>();
+    return type.dynamicCast<ReferenceType>();
   }
 
   bool isConstant( const AbstractType::Ptr& t ) {
@@ -82,7 +82,7 @@ using namespace KDevelop;
   }
 
   bool isNullType( const AbstractType::Ptr& t ) {
-    ConstantIntegralType::Ptr integral = t.cast<ConstantIntegralType>();
+    ConstantIntegralType::Ptr integral = t.dynamicCast<ConstantIntegralType>();
     if( integral && integral->dataType() == IntegralType::TypeInt && integral->value<qint64>() == 0 )
       return true;
     else
@@ -134,7 +134,7 @@ using namespace KDevelop;
   }
 
   bool isVoidType( const AbstractType::Ptr& type ) {
-    IntegralType::Ptr integral = type.cast<IntegralType>();
+    IntegralType::Ptr integral = type.dynamicCast<IntegralType>();
     if( !integral ) return false;
     return integral->dataType() == IntegralType::TypeVoid;
   }
@@ -150,7 +150,7 @@ using namespace KDevelop;
     if( context ) {
       QList<Declaration*> declarations = context->findLocalDeclarations(Identifier(functionName), CursorInRevision::invalid(), topContext);
       for( QList<Declaration*>::iterator it = declarations.begin(); it != declarations.end(); ++it ) {
-        KDevelop::FunctionType::Ptr function = (*it)->abstractType().cast<KDevelop::FunctionType>();
+        KDevelop::FunctionType::Ptr function = (*it)->abstractType().dynamicCast<KDevelop::FunctionType>();
         ClassFunctionDeclaration* functionDeclaration = dynamic_cast<ClassFunctionDeclaration*>( *it );
         if( function && functionDeclaration ) {
           if( !functions.contains(function) && (!mustBeConstant || (function->modifiers() & AbstractType::ConstModifier)) ) {
@@ -219,7 +219,7 @@ const Identifier& castIdentifier() {
 KDevelop::AbstractType::Ptr matchingClassPointer(const KDevelop::AbstractType::Ptr& matchTo, const KDevelop::AbstractType::Ptr& actual, const KDevelop::TopDUContext* topContext) {
   java::TypeConversion conversion(topContext);
 
-  StructureType::Ptr actualStructure = realType(actual, topContext).cast<KDevelop::StructureType>();
+  StructureType::Ptr actualStructure = realType(actual, topContext).dynamicCast<KDevelop::StructureType>();
 
   if(actualStructure) {
     DUContext* internal = actualStructure->internalContext(topContext);
@@ -253,11 +253,11 @@ Declaration* getDeclaration( const AbstractType::Ptr& type, TopDUContext* top ) 
 AbstractType::Ptr decreasePointerDepth(AbstractType::Ptr type, TopDUContext* top, bool useOperator) {
   type = realType(type, top);
 
-  if( PointerType::Ptr pt = type.cast<PointerType>() )
+  if( PointerType::Ptr pt = type.dynamicCast<PointerType>() )
   {
     //Dereference
     return pt->baseType();
-  }else if( ArrayType::Ptr pt = type.cast<ArrayType>() ) {
+  }else if( ArrayType::Ptr pt = type.dynamicCast<ArrayType>() ) {
     return pt->elementType();
   }else{
     if(useOperator) {
@@ -279,11 +279,11 @@ AbstractType::Ptr increasePointerDepth(AbstractType::Ptr type) {
     AbstractType::Ptr oldType = realType(type, 0); ///Dereference references
     PointerType::Ptr newPointer(new PointerType());
     newPointer->setBaseType( oldType );
-    return newPointer.cast<AbstractType>();
+    return newPointer.dynamicCast<AbstractType>();
 }
 
 AbstractType::Ptr removeConstants(AbstractType::Ptr type) {
-      if(ConstantIntegralType::Ptr integral = type.cast<ConstantIntegralType>())
+      if(ConstantIntegralType::Ptr integral = type.dynamicCast<ConstantIntegralType>())
         return AbstractType::Ptr(new IntegralType(*integral));
 
       return type;
