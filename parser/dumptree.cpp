@@ -184,7 +184,7 @@ void DumpTree::visitNode(AstNode *node)
   }
   if (node) {
     qDebug() << QString(indent * 2, ' ').toLatin1().constData() << names[node->kind - 1000]
-             <<  "[" << node->startToken << "," << node->endToken << "]" << nodeText << endl;
+             <<  "[" << node->startToken << "," << node->endToken << "]" << nodeText << Qt::endl;
   }
 
   ++indent;

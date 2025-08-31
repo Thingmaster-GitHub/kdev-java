@@ -207,10 +207,10 @@ void DumpChain::visitNode(AstNode *node)
 
       qDebug() << indentation <<  "\\" << names[node->kind - 1000]
               << "[" << node->startToken << m_editor->findPosition(node->startToken, EditorIntegrator::FrontEdge) << ", "
-              << node->endToken << m_editor->findPosition(node->endToken, EditorIntegrator::BackEdge) << "]" << nodeText << endl;
+              << node->endToken << m_editor->findPosition(node->endToken, EditorIntegrator::BackEdge) << "]" << nodeText << Qt::endl;
     } else {
       qDebug() << indentation << "\\" << names[node->kind - 1000]
-              << "[" << node->startToken << "," << node->endToken << "]" << endl;
+              << "[" << node->startToken << "," << node->endToken << "]" << Qt::endl;
     }
   }
 
@@ -222,10 +222,10 @@ void DumpChain::visitNode(AstNode *node)
     if (m_editor) {
       qDebug() << indentation << "/" << names[node->kind - 1000]
               << "[("  << node->endToken << ") "/*<< m_editor->findPosition(node->startToken, EditorIntegrator::FrontEdge) << ", "*/
-              << m_editor->findPosition(node->endToken, EditorIntegrator::FrontEdge) << "]" << endl;
+              << m_editor->findPosition(node->endToken, EditorIntegrator::FrontEdge) << "]" << Qt::endl;
     } else {
       qDebug() << indentation << "/" << names[node->kind - 1000]
-              << "[" << node->startToken << "," << node->endToken << ']' << endl;
+              << "[" << node->startToken << "," << node->endToken << ']' << Qt::endl;
     }
   }
 }

@@ -46,6 +46,7 @@ Boston, MA 02110-1301, USA.
 #include <project/projectmodel.h>
 #include <qapplication.h>
 #include <kio/job.h>
+#include <KIO/ListJob>
 #include <language/highlighting/codehighlighting.h>
 #include <QReadWriteLock>
 #include <kzip.h>
@@ -57,8 +58,8 @@ K_PLUGIN_FACTORY_WITH_JSON(KDevJavaSupportFactory, "kdevjavasupport.json", regis
 JavaLanguageSupport* JavaLanguageSupport::s_self = 0;
 
 JavaLanguageSupport::JavaLanguageSupport( QObject* parent,
-                                          const QVariantList& /*args*/ )
-        : KDevelop::IPlugin(QStringLiteral("kdevjavasupport"), parent )
+                                          const KPluginMetaData& metaData )
+        : KDevelop::IPlugin(QStringLiteral("kdevjavasupport"), parent,metaData)
         , KDevelop::ILanguageSupport()
         , m_allJavaContext(0)
         , m_javaSourceZipMutex(new QMutex())
@@ -130,8 +131,9 @@ void JavaLanguageSupport::scheduleInternalSources()
             if (path.length() > 0 && path.back() != QLatin1Char('/')) {
                 m_javaSourceUrl.setPath(path + QLatin1Char('/'));
             }
-
-            KIO::ListJob* list = KIO::listRecursive(m_javaSourceUrl, KIO::DefaultFlags, false);
+            KIO::ListJob::ListFlag whatever;//TODO fix this by actually intializing it correctly!
+            //just trying to fix things quickly
+            KIO::ListJob* list = KIO::listRecursive(m_javaSourceUrl, KIO::DefaultFlags, whatever);
             connect(list, SIGNAL(entries(KIO::Job*,KIO::UDSEntryList)), SLOT(slotJavaSourceEntries(KIO::Job*,KIO::UDSEntryList)));
             list->start();
         } else {

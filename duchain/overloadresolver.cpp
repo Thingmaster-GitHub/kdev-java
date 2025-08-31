@@ -49,7 +49,7 @@ Declaration* OverloadResolver::resolveConstructor( const ParameterList& params, 
     for( QList<Declaration*>::iterator it = declarations.begin(); it != declarations.end(); ++it ) {
       if( (*it)->indexedType() )
       {
-        FunctionType::Ptr function = (*it)->abstractType().cast<FunctionType>();
+        FunctionType::Ptr function = (*it)->abstractType().dynamicCast<FunctionType>();
         ClassFunctionDeclaration* functionDeclaration = dynamic_cast<ClassFunctionDeclaration*>(*it);
         //Q_ASSERT();
 
@@ -86,7 +86,7 @@ void OverloadResolver::expandDeclarations( const QList<Declaration*>& declaratio
     Declaration* decl = *it;
     bool isConstant = false;
 
-    if( StructureType::Ptr klass = TypeUtils::realType(decl->abstractType(), m_topContext.data(), &isConstant).cast<StructureType>() )
+    if( StructureType::Ptr klass = TypeUtils::realType(decl->abstractType(), m_topContext.data(), &isConstant).dynamicCast<StructureType>() )
     {
       if( decl->kind() == Declaration::Instance || m_forceIsInstance ) {
         //Instances of classes should be substituted with their operator() members
@@ -114,7 +114,7 @@ void OverloadResolver::expandDeclarations( const QList<QPair<OverloadResolver::P
     QPair<OverloadResolver::ParameterList, Declaration*> decl = *it;
     bool isConstant = false;
 
-    if( StructureType::Ptr klass = TypeUtils::realType(decl.second->abstractType(), m_topContext.data(), &isConstant).cast<StructureType>() )
+    if( StructureType::Ptr klass = TypeUtils::realType(decl.second->abstractType(), m_topContext.data(), &isConstant).dynamicCast<StructureType>() )
     {
       if( decl.second->kind() == Declaration::Instance || m_forceIsInstance ) {
         //Instances of classes should be substituted with their operator() members
@@ -198,7 +198,7 @@ QList< ViableFunction > OverloadResolver::resolveListOffsetted( const ParameterL
     viableFunctions << viable;
   }
 
-  qSort( viableFunctions );
+  std::sort( viableFunctions.begin(), viableFunctions.end() );
 
   return viableFunctions;
 }
@@ -295,13 +295,13 @@ uint OverloadResolver::matchParameterTypes(const AbstractType::Ptr& argumentType
   if(instantiatedTypes.isEmpty())
     return 1;
 
-  DelayedType::Ptr delayed = parameterType.cast<DelayedType>();
+  DelayedType::Ptr delayed = parameterType.dynamicCast<DelayedType>();
   if(delayed)
     return incrementIfSuccessful( matchParameterTypes( argumentType, delayed->identifier(), instantiatedTypes , keepValue) );
 
   ///In case of references on both sides, match the target-types
-  ReferenceType::Ptr argumentRef = argumentType.cast<ReferenceType>();
-  ReferenceType::Ptr parameterRef = parameterType.cast<ReferenceType>();
+  ReferenceType::Ptr argumentRef = argumentType.dynamicCast<ReferenceType>();
+  ReferenceType::Ptr parameterRef = parameterType.dynamicCast<ReferenceType>();
 
   if( argumentRef && parameterRef )
     return incrementIfSuccessful( matchParameterTypes( argumentRef->baseType(), parameterRef->baseType(), instantiatedTypes, keepValue ) );
@@ -311,8 +311,8 @@ uint OverloadResolver::matchParameterTypes(const AbstractType::Ptr& argumentType
     return incrementIfSuccessful( matchParameterTypes( argumentType, parameterRef->baseType(), instantiatedTypes, keepValue ) );
 
   ///In case of pointers on both sides, match the target-types
-  PointerType::Ptr argumentPointer = argumentType.cast<PointerType>();
-  PointerType::Ptr parameterPointer = parameterType.cast<PointerType>();
+  PointerType::Ptr argumentPointer = argumentType.dynamicCast<PointerType>();
+  PointerType::Ptr parameterPointer = parameterType.dynamicCast<PointerType>();
 
   if( argumentPointer && parameterPointer && ((argumentPointer->modifiers() & AbstractType::ConstModifier) == (parameterPointer->modifiers() & AbstractType::ConstModifier)) )
     return incrementIfSuccessful( matchParameterTypes( argumentPointer->baseType(), parameterPointer->baseType(), instantiatedTypes, keepValue ) );
@@ -403,7 +403,7 @@ uint OverloadResolver::matchParameterTypes(AbstractType::Ptr argumentType, const
     return 1;
 
   {
-    ReferenceType::Ptr argumentRef = argumentType.cast<ReferenceType>();
+    ReferenceType::Ptr argumentRef = argumentType.dynamicCast<ReferenceType>();
 
     if( argumentRef && parameterType.isReference() )
       argumentType = argumentRef->baseType();
@@ -411,13 +411,13 @@ uint OverloadResolver::matchParameterTypes(AbstractType::Ptr argumentType, const
       return 0; //Reference on right side, but not on left
   }
   {
-    PointerType::Ptr argumentPointer = argumentType.cast<PointerType>();
+    PointerType::Ptr argumentPointer = argumentType.dynamicCast<PointerType>();
     int cnt = 0; ///@todo correct ordering of the pointers and their constnesses
     while( argumentPointer && cnt < parameterType.pointerDepth() ) {
 
       ++cnt;
       argumentType = argumentPointer->baseType();
-      argumentPointer = argumentType.cast<PointerType>();
+      argumentPointer = argumentType.dynamicCast<PointerType>();
     }
     if( cnt != parameterType.pointerDepth() || !argumentType ) {
       return 0; //Do not have the needed count of pointers

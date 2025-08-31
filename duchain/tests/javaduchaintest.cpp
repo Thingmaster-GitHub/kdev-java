@@ -19,7 +19,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
 #include "javaduchaintest.h"
 #include <tests/testfile.h>
 #include <tests/autotestshell.h>

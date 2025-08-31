@@ -239,14 +239,14 @@ void DeclarationBuilder::visitEnumConstant(java::EnumConstantAst* node)
 
   DeclarationBuilderBase::visitEnumConstant(node);
 
-  EnumeratorType::Ptr enumeratorType = lastType().cast<EnumeratorType>();
+  EnumeratorType::Ptr enumeratorType = lastType().dynamicCast<EnumeratorType>();
 
   closeDeclaration();
 
   if(enumeratorType) { ///@todo Move this into closeDeclaration in a logical way
     DUChainWriteLocker lock(DUChain::lock());
     enumeratorType->setDeclaration(decl);
-    decl->setAbstractType(enumeratorType.cast<AbstractType>());
+    decl->setAbstractType(enumeratorType.dynamicCast<AbstractType>());
   }
 }
 
@@ -277,7 +277,7 @@ void DeclarationBuilder::visitVariableDeclarationData(java::VariableDeclarationD
 
   DeclarationBuilderBase::visitVariableDeclarationData(node);
 
-  m_currentVariableModifiers = 0;
+  m_currentVariableModifiers = static_cast<ClassDeclaration::StorageSpecifiers>(0);
 }
 
 void DeclarationBuilder::visitVariableDeclarator(VariableDeclaratorAst * node)

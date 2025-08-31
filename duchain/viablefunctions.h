@@ -1,19 +1,19 @@
 /* This file is part of KDevelop
-    Copyright 2007 David Nolden <david.nolden.kdevelop@art-master.de>
+ C o*pyright 2007 David Nolden <david.nolden.kdevelop@art-master.de>
 
-   This library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Library General Public
-   License version 2 as published by the Free Software Foundation.
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Library General Public
+ License version 2 as published by the Free Software Foundation.
 
-   This library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Library General Public License for more details.
+ This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Library General Public License for more details.
 
-   You should have received a copy of the GNU Library General Public License
-   along with this library; see the file COPYING.LIB.  If not, write to
-   the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-   Boston, MA 02110-1301, USA.
+You should have received a copy of the GNU Library General Public License
+along with this library; see the file COPYING.LIB.  If not, write to
+the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+Boston, MA 02110-1301, USA.
 */
 #ifndef VIABLEFUNCTIONS_H
 #define VIABLEFUNCTIONS_H
@@ -37,7 +37,7 @@ namespace java {
   using namespace KDevelop;
 
   class ViableFunction {
-    public:
+  public:
 
     explicit ViableFunction( TopDUContext* topContext = 0, Declaration* decl = 0, bool noUserDefinedConversion = false );
 
@@ -79,7 +79,7 @@ namespace java {
     ///Returns a list of structures that describe the conversion needed for each parameter of the function
     const KDevVarLengthArray<ParameterConversion>& parameterConversions() const;
 
-    private:
+  private:
     KDevVarLengthArray<ParameterConversion> m_parameterConversions;
     KDevelop::DeclarationPointer m_declaration;
     KDevelop::TopDUContextPointer m_topContext;

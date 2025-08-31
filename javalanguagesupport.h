@@ -50,7 +50,7 @@ class JavaLanguageSupport : public KDevelop::IPlugin, public KDevelop::ILanguage
 Q_OBJECT
 Q_INTERFACES( KDevelop::ILanguageSupport )
 public:
-    JavaLanguageSupport(  QObject* parent, const QVariantList& args = QVariantList() );
+    JavaLanguageSupport(  QObject* parent,const KPluginMetaData& metaData);
     virtual ~JavaLanguageSupport();
 
     virtual QString name() const override;

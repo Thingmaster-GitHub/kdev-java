@@ -210,26 +210,32 @@ void TopDUContext::findJavaDeclarationsInternal( const SearchItem::PtrList& iden
 #endif
 
     if(!id.isEmpty()) {
-      PersistentSymbolTable::FilteredDeclarationIterator filter = PersistentSymbolTable::self().filteredDeclarations(id, recursiveImportIndices());
-
-      if (filter) {
-        for(; filter; ++filter) {
-          const IndexedDeclaration iDecl = *filter;
-
+      PersistentSymbolTable::self().visitFilteredDeclarations(
+        id, recursiveImportIndices(),
+        [&](const IndexedDeclaration& iDecl) {
           Declaration* aliasDecl = iDecl.data();
+          if (!aliasDecl) {
+            return PersistentSymbolTable::VisitorState::Continue; // or Break if you want to stop
+          }
+
+          //TODO add code here that I removed if it doesn't work!
+
+          return PersistentSymbolTable::VisitorState::Continue;
+
+
 
 #ifdef DEBUG_SEARCH2
           qDebug() << "Found declaration" << aliasDecl;
 #endif
 
           if(!aliasDecl)
-            continue;
+            return PersistentSymbolTable::VisitorState::Continue;
 
           if(aliasDecl->identifier() != id.last()) { //Since we have retrieved the aliases by hash only, we still need to compare the name
 #ifdef DEBUG_SEARCH2
             qDebug() << "Dumped as not the same identifier" << aliasDecl->identifier().toString() << id.last().toString();
 #endif
-            continue;
+            return PersistentSymbolTable::VisitorState::Continue;
           }
 
           ClassMemberDeclaration* classMemberDecl = dynamic_cast<ClassMemberDeclaration*>(aliasDecl);
@@ -239,14 +245,14 @@ void TopDUContext::findJavaDeclarationsInternal( const SearchItem::PtrList& iden
 #ifdef DEBUG_SEARCH2
             qDebug() << "Dumped as not static where search requested static only" << aliasDecl->identifier().toString();
 #endif
-            continue;
+            return PersistentSymbolTable::VisitorState::Continue;
           }
 
 #ifdef DEBUG_SEARCH2
           qDebug() << "Trying to accept" << aliasDecl->identifier().toString();
 #endif
           accept(aliasDecl);
-        }
+        });
       }
     }
 
@@ -256,4 +262,4 @@ void TopDUContext::findJavaDeclarationsInternal( const SearchItem::PtrList& iden
   }
 }
 
-}
+

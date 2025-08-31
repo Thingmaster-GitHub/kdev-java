@@ -147,12 +147,12 @@ uint TypeConversion::implicitConversion( IndexedType _from, IndexedType _to, boo
   }else{
 
     //qDebug(9007) << "Checking conversion from " << from->toString() << " to " << to->toString();
-    ReferenceType::Ptr fromReference = from.cast<ReferenceType>();
+    ReferenceType::Ptr fromReference = from.dynamicCast<ReferenceType>();
     if( fromReference )
       fromLValue = true;
 
     ///iso c++ draft 13.3.3.1.4 reference-binding, modeled roughly
-    ReferenceType::Ptr toReference = to.cast<ReferenceType>();
+    ReferenceType::Ptr toReference = to.dynamicCast<ReferenceType>();
     if( toReference ) {
       AbstractType::Ptr realFrom = realType(from, m_topContext);
       AbstractType::Ptr realTo = realType(to, m_topContext);
@@ -168,8 +168,8 @@ uint TypeConversion::implicitConversion( IndexedType _from, IndexedType _to, boo
           goto ready;
         }
         //Or realType(toReference) is a public base-class of realType(fromReference)
-        StructureType::Ptr fromClass = realFrom.cast<StructureType>();
-        StructureType::Ptr toClass = realTo.cast<StructureType>();
+        StructureType::Ptr fromClass = realFrom.dynamicCast<StructureType>();
+        StructureType::Ptr toClass = realTo.dynamicCast<StructureType>();
 
         if( fromClass && toClass && isPublicBaseClass( fromClass, toClass, m_topContext, &m_baseConversionLevels ) ) {
           conv = ExactMatch + 2*ConversionRankOffset;
@@ -264,13 +264,13 @@ ConversionRank TypeConversion::pointerConversion( PointerType::Ptr from, Pointer
     if((nextFrom->modifiers() & AbstractType::ConstModifier) && !(nextTo->modifiers() & AbstractType::ConstModifier))
       return NoMatch; //Cannot convert const -> non-const
 
-    PointerType::Ptr pointerFrom = nextFrom.cast<PointerType>();
-    PointerType::Ptr pointerTo = nextTo.cast<PointerType>();
+    PointerType::Ptr pointerFrom = nextFrom.dynamicCast<PointerType>();
+    PointerType::Ptr pointerTo = nextTo.dynamicCast<PointerType>();
     if(pointerFrom && pointerTo)
       return pointerConversion(pointerFrom, pointerTo);
 
-    StructureType::Ptr fromClass = nextFrom.cast<StructureType>();
-    StructureType::Ptr toClass = nextTo.cast<StructureType>();
+    StructureType::Ptr fromClass = nextFrom.dynamicCast<StructureType>();
+    StructureType::Ptr toClass = nextTo.dynamicCast<StructureType>();
     if( toClass && fromClass )
       if(toClass->modifiers() & AbstractType::ConstModifier || !(fromClass->modifiers()& AbstractType::ConstModifier))
         if( isPublicBaseClass( fromClass, toClass, m_topContext, &m_baseConversionLevels ) )
@@ -351,25 +351,25 @@ ConversionRank TypeConversion::standardConversion( AbstractType::Ptr from, Abstr
 
       ConversionRank ret = standardConversion( fromNonConstant, to, removeCategories(categories,LValueTransformationCategory), maxCategories-1 );
       maximizeRank( bestRank, ret );
-    }else if( ArrayType::Ptr array = realType(from, m_topContext, &constRef).cast<ArrayType>() ) { //realType(from) is used here so reference-to-array can be transformed to a pointer. This does not exactly follow the standard I think, check that.
+    }else if( ArrayType::Ptr array = realType(from, m_topContext, &constRef).dynamicCast<ArrayType>() ) { //realType(from) is used here so reference-to-array can be transformed to a pointer. This does not exactly follow the standard I think, check that.
       ///Transform array to pointer. Iso c++ draft 4.2 modeled roughly.
       PointerType::Ptr p( new PointerType() );
       if (constRef)
         p->setModifiers(AbstractType::ConstModifier);
       p->setBaseType(array->elementType());
-      ConversionRank rank = standardConversion( p.cast<AbstractType>(), to, removeCategories(categories,LValueTransformationCategory), maxCategories-1 );
+      ConversionRank rank = standardConversion( p.dynamicCast<AbstractType>(), to, removeCategories(categories,LValueTransformationCategory), maxCategories-1 );
 
       maximizeRank( bestRank, worseRank(rank, ExactMatch ) );
-    } else if( FunctionType::Ptr function = realType(from, m_topContext, &constRef).cast<FunctionType>() ) {
+    } else if( FunctionType::Ptr function = realType(from, m_topContext, &constRef).dynamicCast<FunctionType>() ) {
       ///Transform lvalue-function. Iso c++ draft 4.3
       //This code is nearly the same as the above array-to-pointer conversion. Maybe it should be merged.
 
       PointerType::Ptr p( new PointerType() );
       if (constRef)
         p->setModifiers(AbstractType::ConstModifier);
-      p->setBaseType( function.cast<AbstractType>() );
+      p->setBaseType( function.dynamicCast<AbstractType>() );
 
-      ConversionRank rank = standardConversion( p.cast<AbstractType>(), to, removeCategories(categories,LValueTransformationCategory), maxCategories-1 );
+      ConversionRank rank = standardConversion( p.dynamicCast<AbstractType>(), to, removeCategories(categories,LValueTransformationCategory), maxCategories-1 );
 
       maximizeRank( bestRank, worseRank(rank, ExactMatch ) );
     }else if(from->modifiers() & AbstractType::ConstModifier) {
@@ -387,11 +387,11 @@ ConversionRank TypeConversion::standardConversion( AbstractType::Ptr from, Abstr
 //     ///@todo iso c++ 4.4.2 etc: pointer to member
 //   }
 
-  EnumerationType::Ptr toEnumeration = to.cast<EnumerationType>();
+  EnumerationType::Ptr toEnumeration = to.dynamicCast<EnumerationType>();
 
   if(toEnumeration) {
     //Eventually convert enumerator -> enumeration if the enumeration equals
-    EnumeratorType::Ptr fromEnumerator = from.cast<EnumeratorType>();
+    EnumeratorType::Ptr fromEnumerator = from.dynamicCast<EnumeratorType>();
     if(fromEnumerator) {
       Declaration* enumeratorDecl = fromEnumerator->declaration(m_topContext);
       Declaration* enumerationDecl = toEnumeration->declaration(m_topContext);
@@ -404,7 +404,7 @@ ConversionRank TypeConversion::standardConversion( AbstractType::Ptr from, Abstr
 
   if( categories & PromotionCategory ) {
 
-    IntegralType::Ptr integral = from.cast<IntegralType>();
+    IntegralType::Ptr integral = from.dynamicCast<IntegralType>();
     if( integral ) {
 
       ///Integral promotions, iso c++ 4.5
@@ -430,11 +430,11 @@ ConversionRank TypeConversion::standardConversion( AbstractType::Ptr from, Abstr
 
   if( categories & ConversionCategory )
   {
-    IntegralType::Ptr fromIntegral = from.cast<IntegralType>();
-    EnumerationType::Ptr fromEnumeration = fromIntegral.cast<EnumerationType>();
-    EnumeratorType::Ptr fromEnumerator = fromIntegral.cast<EnumeratorType>();
+    IntegralType::Ptr fromIntegral = from.dynamicCast<IntegralType>();
+    EnumerationType::Ptr fromEnumeration = fromIntegral.dynamicCast<EnumerationType>();
+    EnumeratorType::Ptr fromEnumerator = fromIntegral.dynamicCast<EnumeratorType>();
 
-    IntegralType::Ptr toIntegral = to.cast<IntegralType>();
+    IntegralType::Ptr toIntegral = to.dynamicCast<IntegralType>();
 
     if( fromIntegral && toIntegral ) {
       ///iso c++ 4.7 integral conversion: we can convert from any integer type to any other integer type, and from enumeration-type to integer-type
@@ -459,8 +459,8 @@ ConversionRank TypeConversion::standardConversion( AbstractType::Ptr from, Abstr
     }
 
     ///iso c++ 4.10 pointer conversion: null-type con be converted to pointer
-    PointerType::Ptr fromPointer = from.cast<PointerType>();
-    PointerType::Ptr toPointer = to.cast<PointerType>();
+    PointerType::Ptr fromPointer = from.dynamicCast<PointerType>();
+    PointerType::Ptr toPointer = to.dynamicCast<PointerType>();
 
     if( isNullType(from) && toPointer )
     {
@@ -502,7 +502,7 @@ bool TypeConversion::identityConversion( AbstractType::Ptr from, AbstractType::P
     return false;
 
   //ConstantIntegralType::equals does not return true on equals in this case, but the type is compatible.
-  if(from.cast<ConstantIntegralType>() && typeid(*to) == typeid(IntegralType))
+  if(from.dynamicCast<ConstantIntegralType>() && typeid(*to) == typeid(IntegralType))
     return true;
 
   return from->equals(to.data());
@@ -524,7 +524,7 @@ ConversionRank TypeConversion::userDefinedConversion( AbstractType::Ptr from, Ab
 
   bool fromConst = false;
   AbstractType::Ptr realFrom( realType(from, m_topContext, &fromConst) );
-  StructureType::Ptr fromClass = realFrom.cast<StructureType>();
+  StructureType::Ptr fromClass = realFrom.dynamicCast<StructureType>();
   {
     ///Try user-defined conversion using a conversion-function, iso c++ 12.3
 
@@ -557,7 +557,7 @@ ConversionRank TypeConversion::userDefinedConversion( AbstractType::Ptr from, Ab
 
   {
     ///Try conversion using constructor
-    StructureType::Ptr toClass = realTo.cast<StructureType>(); //@todo think whether the realType(..) is ok
+    StructureType::Ptr toClass = realTo.dynamicCast<StructureType>(); //@todo think whether the realType(..) is ok
     if( toClass && toClass->declaration(m_topContext) )
     {
       if( fromClass ) {

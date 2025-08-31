@@ -65,7 +65,8 @@ void ExpressionVisitor::visitBuiltInType(BuiltInTypeAst* node) {
           break;
     }
 
-    setLastType(IntegralType::Ptr(new IntegralType(type)));
+    setLastType(AbstractType::Ptr(new IntegralType(type)));
+
 }
 
 void ExpressionVisitor::visitClassOrInterfaceTypeName(ClassOrInterfaceTypeNameAst* node) {
@@ -85,7 +86,7 @@ void ExpressionVisitor::visitClassOrInterfaceTypeName(ClassOrInterfaceTypeNameAs
   AstNode* useNode = 0;
 
   AbstractType::Ptr type = openTypeFromName(id, true);
-  if (StructureType::Ptr classType = StructureType::Ptr::dynamicCast(type)) {
+  if (StructureType::Ptr classType = type.dynamicCast<StructureType>()){
     DUChainReadLocker lock(DUChain::lock());
     useDecl = classType->declaration(topContext());
     if (useDecl)
@@ -117,7 +118,7 @@ AbstractType::Ptr ExpressionVisitor::openTypeFromName(QualifiedIdentifier id, bo
     if(!delay) {
       foreach( Declaration* decl, dec ) {
         // gcc 4.0.1 doesn't eath this // if( needClass && !decl->abstractType().cast<StructureType>() )
-        if( needClass && !decl->abstractType().cast(static_cast<StructureType *>(0)) )
+        if( needClass && !decl->abstractType().dynamicCast<StructureType>() )
           continue;
 
         if (decl->abstractType() ) {
@@ -178,7 +179,7 @@ void ExpressionVisitor::visitLiteral(LiteralAst* node) {
     default:
       return;
   }
-  setLastType(newConstant);
+  setLastType(AbstractType::Ptr(newConstant));
 }
 
 void ExpressionVisitor::visitMethodCallData(MethodCallDataAst* node)
@@ -262,7 +263,8 @@ void ExpressionVisitor::visitOptionalArrayBuiltInType(OptionalArrayBuiltInTypeAs
     ArrayType::Ptr newArrayType(new ArrayType());
     newArrayType->setDimension(node->declaratorBrackets->bracketCount);
     newArrayType->setElementType(lastType());
-    setLastType(newArrayType);
+
+    setLastType(AbstractType::Ptr(newArrayType));
   }
 }
 
@@ -323,7 +325,7 @@ void ExpressionVisitor::visitPrimarySelector(PrimarySelectorAst* node)
         if (declContext) {
           foreach (Declaration* decl, declContext->findDeclarations(id)) {
             // Only select fields
-            if (decl->abstractType() && !FunctionType::Ptr::dynamicCast(decl->abstractType())) {
+            if (decl->abstractType() && !decl->abstractType().dynamicCast<FunctionType>()) {
               setLastInstance(decl);
               useNode = node->simpleNameAccess;
               useDecl = decl;

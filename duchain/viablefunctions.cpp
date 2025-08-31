@@ -38,9 +38,15 @@ inline bool ViableFunction::ParameterConversion::operator<(const ParameterConver
     return baseConversionLevels > rhs.baseConversionLevels; //Conversion-rank is same, so use the base-conversion levels for ranking
 }
 
-ViableFunction::ViableFunction( TopDUContext* topContext, Declaration* decl, bool noUserDefinedConversion ) : m_declaration(decl), m_topContext(topContext), m_type(0), m_parameterCountMismatch(true), m_noUserDefinedConversion(noUserDefinedConversion) {
+ViableFunction::ViableFunction( TopDUContext* topContext, Declaration* decl, bool noUserDefinedConversion ) :
+  m_parameterConversions(),
+  m_declaration(decl),
+  m_topContext(topContext),
+  m_type(0),
+  m_parameterCountMismatch(true),
+  m_noUserDefinedConversion(noUserDefinedConversion) {
   if( decl )
-    m_type = decl->abstractType().cast<KDevelop::FunctionType>();
+    m_type = decl->abstractType().dynamicCast<KDevelop::FunctionType>();
   m_funDecl = dynamic_cast<AbstractFunctionDeclaration*>(m_declaration.data());
 }
 
@@ -159,6 +165,6 @@ uint ViableFunction::worstConversion() const {
     return ret;
 }
 
-const KDevVarLengthArray<ViableFunction::ParameterConversion>& ViableFunction::parameterConversions() const {
+const QVarLengthArray<ViableFunction::ParameterConversion>& ViableFunction::parameterConversions() const {
   return m_parameterConversions;
 }
