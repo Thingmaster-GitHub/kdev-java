@@ -165,6 +165,6 @@ uint ViableFunction::worstConversion() const {
     return ret;
 }
 
-const QVarLengthArray<ViableFunction::ParameterConversion>& ViableFunction::parameterConversions() const {
+const KDevVarLengthArray<ViableFunction::ParameterConversion>& ViableFunction::parameterConversions() const {
   return m_parameterConversions;
 }
