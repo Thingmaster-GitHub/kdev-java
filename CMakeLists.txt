@@ -1,5 +1,10 @@
 project(java)
 
+
+cmake_minimum_required(VERSION 3.10)
+
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 set(CMAKE_AUTOMOC ON)
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Test Qml Quick)
 find_package(KF6I18n REQUIRED)
@@ -7,7 +12,7 @@ find_package(KF6KIO REQUIRED)
 find_package(KDevPlatform REQUIRED)
 
 
-cmake_minimum_required(VERSION 3.10)
+
 
 find_package (ECM 5.28.0 REQUIRED CONFIG)
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})

@@ -1,4 +1,4 @@
-
+#[[
 include(ECMAddTests)
 
 include_directories(
@@ -14,6 +14,6 @@ ecm_mark_as_test(javaduchaintest)
 target_link_libraries(javaduchaintest
     kdevjavaduchain
     KDevPlatformLanguage
-    KDevPlatformTests
+    KDevPlatformInterfaces
     Qt6::Test
-)
+)]]
