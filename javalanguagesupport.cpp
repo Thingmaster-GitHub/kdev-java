@@ -131,9 +131,9 @@ void JavaLanguageSupport::scheduleInternalSources()
             if (path.length() > 0 && path.back() != QLatin1Char('/')) {
                 m_javaSourceUrl.setPath(path + QLatin1Char('/'));
             }
-            KIO::ListJob::ListFlag whatever;//TODO fix this by actually intializing it correctly!
-            //just trying to fix things quickly
-            KIO::ListJob* list = KIO::listRecursive(m_javaSourceUrl, KIO::DefaultFlags, whatever);
+            KIO::ListJob::ListFlag listFlags = KIO::ListJob::ListFlag::IncludeHidden;
+
+            KIO::ListJob* list = KIO::listRecursive(m_javaSourceUrl, KIO::DefaultFlags, listFlags);
             connect(list, SIGNAL(entries(KIO::Job*,KIO::UDSEntryList)), SLOT(slotJavaSourceEntries(KIO::Job*,KIO::UDSEntryList)));
             list->start();
         } else {
@@ -153,7 +153,7 @@ void JavaLanguageSupport::slotJavaSourceEntries(KIO::Job* job, KIO::UDSEntryList
         url = url.adjusted(QUrl::StripTrailingSlash);
         url.setPath(url.path() + '/' + (entry.stringValue(KIO::UDSEntry::UDS_NAME)));
         if (!entry.isDir() && !entry.isLink()) {
-            qDebug() << "Found" << url << "in the java source zip, scheduled for parsing";
+            //qDebug() << "Found" << url << "in the java source zip, scheduled for parsing";
             KDevelop::ICore::self()->languageController()->backgroundParser()->addDocument(KDevelop::IndexedString(url), KDevelop::TopDUContext::SimplifiedVisibleDeclarationsAndContexts);
         }
     }

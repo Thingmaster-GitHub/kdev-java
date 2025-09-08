@@ -89,7 +89,7 @@ bool ParseJob::wasReadFromDisk() const
     return m_readFromDisk;
 }
 
-void ParseJob::run()
+void ParseJob::run(ThreadWeaver::JobPointer /*self*/, ThreadWeaver::Thread * /*thread*/)
 {
     if ( abortRequested() )
         return abortJob();

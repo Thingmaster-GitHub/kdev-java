@@ -54,7 +54,7 @@ public:
     bool wasReadFromDisk() const;
 
 protected:
-    virtual void run();
+    virtual void run(ThreadWeaver::JobPointer /*self*/, ThreadWeaver::Thread * /*thread*/);
 
 
 private:

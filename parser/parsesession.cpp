@@ -31,7 +31,7 @@ namespace java
 ParseSession::ParseSession()
     : memoryPool( new Parser::memoryPoolType )
     , tokenStream( new KDevPG::TokenStream )
-    , compatibilityMode( Parser::Java15Compatibility )
+    , compatibilityMode( Parser::Java21Compatibility )
 {
 }
 
@@ -43,6 +43,7 @@ ParseSession::~ParseSession()
 
 KDevelop::CursorInRevision ParseSession::positionAt( qint64 offset ) const
 {
+
     qint64 line, column;
     tokenStream->locationTable()->positionAt( offset, &line, &column );
     return KDevelop::CursorInRevision(line, column);

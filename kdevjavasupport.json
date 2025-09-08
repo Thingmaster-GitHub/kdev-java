@@ -32,7 +32,6 @@
         "Description[uk]": "Підтримка мови Java",
         "Description[x-test]": "xxJava Language Supportxx",
         "Icon": "application-x-java",
-        "Id": "kdevjavasupport",
         "License": "GPL",
         "Name": "Java Support",
         "Name[bg]": "Поддръжка на Java",
@@ -65,8 +64,12 @@
             "KDevelop/Plugin"
         ]
     },
+
     "X-KDevelop-Interfaces": [
         "ILanguageSupport"
+    ],
+    "X-KDevelop-Languages": [
+    "java"
     ],
     "X-KDevelop-Language": "Java",
     "X-KDevelop-Mode": "NoGUI",
