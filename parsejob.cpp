@@ -129,7 +129,9 @@ void ParseJob::run(ThreadWeaver::JobPointer /*self*/, ThreadWeaver::Thread * /*t
     qDebug() << "===-- PARSING --===> "
              << document().str()
              << " <== readFromDisk: " << m_readFromDisk
-             << " size: " << m_session->size();
+             << " size: " << m_session->size();//TODO error somewhere here!!
+             //use to fix other errors in program
+             //I'm guessing it's a depriciated function call
 
     if ( abortRequested() )
         return abortJob();
@@ -204,7 +206,7 @@ void ParseJob::run(ThreadWeaver::JobPointer /*self*/, ThreadWeaver::Thread * /*t
 
     bool declarationsComplete = !declarationBuilder.hadUnresolvedIdentifiers();
 
-    qDebug() << "Parsing with feature set: " << newFeatures << " complete:" <<declarationsComplete;
+    qDebug() << "Parsing with feature set: " << newFeatures << " complete:" <<declarationsComplete;//TODO before here is error
 
     if (!declarationsComplete) {
         if (!declarationBuilder.identifiersRemainUnresolved()) {
