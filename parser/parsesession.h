@@ -24,12 +24,16 @@
 
 #include <QtCore/QByteArray>
 
-#include "javaparser.h"
 
 #include "javaparser_export.h"
 
+#include <kdev-pg-memory-pool.h>
+#include <kdev-pg-token-stream.h>
+
 #include <serialization/indexedstring.h>
 #include <language/duchain/ducontext.h>
+
+#include "javaast-fwd.h"
 
 namespace java
 {
@@ -56,9 +60,16 @@ public:
   const char *contents() const;
   KDevelop::IndexedString m_document;
   qint64 size() const;
-  Parser::memoryPoolType *memoryPool;
   KDevPG::TokenStream *tokenStream;
-  Parser::JavaCompatibilityMode compatibilityMode;
+
+  //this is stolen from javaparser.h so it doesn't break stuff
+  enum JavaCompatibilityMode
+  {
+    Java13Compatibility = 130,
+    Java14Compatibility = 140,
+    Java15Compatibility = 150
+  };
+  JavaCompatibilityMode compatibilityMode;
 
   QString symbol(qint64 token) const;
 
@@ -71,6 +82,25 @@ public:
   {
     Q_UNUSED(node);
     Q_UNUSED(use);
+  }
+
+  //this is a little hacky because you can't include javaparser here
+  typedef KDevPG::MemoryPool memoryPoolType;
+
+  KDevPG::MemoryPool *memoryPool;
+  template <class T>
+  inline T *create()
+  {
+    T *node = new (memoryPool->allocate(sizeof(T))) T();
+    node->kind = T::KIND;
+    return node;
+  }
+  template <class T>
+  inline T *create(AstNode *u)
+  {
+    T *node = new (memoryPool->allocate(sizeof(T))) T(u);
+    node->kind = T::KIND;
+    return node;
   }
 
 private:

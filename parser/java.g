@@ -89,7 +89,7 @@ class DUContext;
 %parser_declaration_header "QtCore/QDebug"
 %parser_declaration_header "kdev-pg-list.h"
 %parser_declaration_header "serialization/indexedstring.h"
-%parser_declaration_header "sessionstore.h"
+%parser_declaration_header "parsesession.h"
 
 %export_macro "KDEVJAVAPARSER_EXPORT"
 %export_macro_header "javaparser_export.h"
@@ -237,17 +237,15 @@ class DUContext;
    * The compatibilityMode() status variable tells which version of Java
    * should be checked against.
    */
-  enum JavaCompatibilityMode {
-      Java13Compatibility = 130,
-      Java14Compatibility = 140,
-      Java15Compatibility = 150
-  };
 
-  Parser::JavaCompatibilityMode compatibilityMode();
-  void setCompatibilityMode( Parser::JavaCompatibilityMode mode );
+  ParseSession::JavaCompatibilityMode compatibilityMode();
+  void setCompatibilityMode( ParseSession::JavaCompatibilityMode mode );
 
   void setDocument(KDevelop::IndexedString document);
   void setContents(char *contents);
+  void setSession(ParseSession* session);
+
+
 
   enum ProblemType {
       Error,
@@ -259,7 +257,7 @@ class DUContext;
 
 %parserclass (private declaration)
 [:
-  Parser::JavaCompatibilityMode m_compatibilityMode;
+  ParseSession::JavaCompatibilityMode m_compatibilityMode;
 
   struct ParserState {
       // ltCounter stores the amount of currently open type arguments rules,
@@ -273,10 +271,12 @@ class DUContext;
   const char *m_contents;
 
   KDevelop::IndexedString m_document;
+
+  ParseSession *m_session;
 :]
 
 %parserclass (constructor)
-  [: m_compatibilityMode = Java15Compatibility; :]
+  [: m_compatibilityMode = ParseSession::Java15Compatibility; :]
 
 
 
@@ -439,7 +439,7 @@ class DUContext;
 -- Definition of a Java CLASS
 
    CLASS className=identifier
-   (  ?[: compatibilityMode() >= Java15Compatibility :]
+   (  ?[: compatibilityMode() >= ParseSession::Java15Compatibility :]
       typeParameters=typeParameters
     | 0
    )  -- in Java 1.5 or higher, it might have type parameters
@@ -454,7 +454,7 @@ class DUContext;
 -- Definition of a Java INTERFACE
 
    INTERFACE interfaceName=identifier
-   (  ?[: compatibilityMode() >= Java15Compatibility :]
+   (  ?[: compatibilityMode() >= ParseSession::Java15Compatibility :]
       typeParameters=typeParameters
     | 0
    )  -- in Java 1.5 or higher, it might have type parameters
@@ -582,7 +582,7 @@ class DUContext;
     |
       -- A generic method/ctor has the typeParameters before the return type.
       -- This is not allowed for variable definitions, which is checked later.
-      (  ?[: compatibilityMode() >= Java15Compatibility :]
+      (  ?[: compatibilityMode() >= ParseSession::Java15Compatibility :]
          typeParameters:typeParameters
        | 0
       )
@@ -641,7 +641,7 @@ class DUContext;
     |
       -- A generic method has the typeParameters before the return type.
       -- This is not allowed for variable definitions, which is checked later.
-      (  ?[: compatibilityMode() >= Java15Compatibility :]
+      (  ?[: compatibilityMode() >= ParseSession::Java15Compatibility :]
          typeParameters:typeParameters
        | 0
       )
@@ -684,7 +684,7 @@ class DUContext;
       -- A generic method has the typeParameters before the return type.
       -- This is not allowed for variable definitions, which is checked later.
       0 [: bool hasTypeParameters = false; :]
-      (  ?[: compatibilityMode() >= Java15Compatibility :]
+      (  ?[: compatibilityMode() >= ParseSession::Java15Compatibility :]
          typeParameters:typeParameters [: hasTypeParameters = true; :]
        | 0
       )
@@ -841,7 +841,7 @@ class DUContext;
 --
 -- -- Catches obvious constructor calls, but not the expr.super(...) calls:
 --
---    (  ?[: compatibilityMode() >= Java15Compatibility :]
+--    (  ?[: compatibilityMode() >= ParseSession::Java15Compatibility :]
 --       typeArguments=typeArguments
 --     | 0
 --    )
@@ -1211,7 +1211,7 @@ class DUContext;
      variableDeclarationStartOrForeachParameter:parameterDeclaration  -- "int i"
      (
          -- foreach: int i : intList.values()
-         ?[: compatibilityMode() >= Java15Compatibility :]
+         ?[: compatibilityMode() >= ParseSession::Java15Compatibility :]
          COLON iterableExpression:expression
          foreachDeclaration=foreachDeclarationData[
            variableDeclarationStartOrForeachParameter, iterableExpression
@@ -1495,7 +1495,7 @@ class DUContext;
       simpleNameAccess=simpleNameAccessData[ identifier ]
     |
       -- method calls (including the "super" ones) may have type arguments
-      (  ?[: compatibilityMode() >= Java15Compatibility :]
+      (  ?[: compatibilityMode() >= ParseSession::Java15Compatibility :]
          typeArguments:nonWildcardTypeArguments
        | 0
       )
@@ -1529,7 +1529,7 @@ class DUContext;
       simpleNameAccess=simpleNameAccessData[ identifier ]
     |
       -- method access (looks like super.methodName(...) in the end)
-      (  ?[: compatibilityMode() >= Java15Compatibility :]
+      (  ?[: compatibilityMode() >= ParseSession::Java15Compatibility :]
          typeArguments:nonWildcardTypeArguments
        | 0
       )
@@ -1563,7 +1563,7 @@ class DUContext;
    SUPER superSuffix:superSuffix
    superAccess=superAccessData[ 0 /* no type arguments */, superSuffix ]
  |
-   ?[: compatibilityMode() >= Java15Compatibility :]
+   ?[: compatibilityMode() >= ParseSession::Java15Compatibility :]
    -- generic method invocation with type arguments:
    typeArguments:nonWildcardTypeArguments
    (
@@ -1643,7 +1643,7 @@ class DUContext;
 -- NEW EXPRESSIONs are allocations of new types or arrays.
 
    NEW
-   (  ?[: compatibilityMode() >= Java15Compatibility :]
+   (  ?[: compatibilityMode() >= ParseSession::Java15Compatibility :]
       typeArguments=nonWildcardTypeArguments
     | 0
    )
@@ -1723,7 +1723,7 @@ class DUContext;
 -> classOrInterfaceTypeName ;;
 
    identifier=identifier
-   (  ?[: compatibilityMode() >= Java15Compatibility :]
+   (  ?[: compatibilityMode() >= ParseSession::Java15Compatibility :]
       typeArguments=typeArguments
     | 0
    )
@@ -1862,11 +1862,11 @@ void Parser::tokenize( char *contents )
     this->yylex(); // produce the look ahead token
 }
 
-Parser::JavaCompatibilityMode Parser::compatibilityMode()
+ParseSession::JavaCompatibilityMode Parser::compatibilityMode()
 {
     return m_compatibilityMode;
 }
-void Parser::setCompatibilityMode( Parser::JavaCompatibilityMode mode )
+void Parser::setCompatibilityMode( ParseSession::JavaCompatibilityMode mode )
 {
     m_compatibilityMode = mode;
 }
@@ -1877,6 +1877,10 @@ void Parser::setDocument(KDevelop::IndexedString document)
 void Parser::setContents(char *contents)
 {
   m_contents = contents;
+}
+void Parser::setSession(ParseSession* session)
+{
+  m_session = session;
 }
 
 Parser::ParserState *Parser::copyCurrentState()

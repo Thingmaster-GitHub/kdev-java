@@ -155,7 +155,7 @@ FloatingPoint   {Float1}|{Float2}|{Float3}|{Float4}|{HexFloat1}|{HexFloat2}
 ";"             return Parser::Token_SEMICOLON;
 "."             return Parser::Token_DOT;
 "@"             {
-    if (m_parser->compatibilityMode() >= Parser::Java15Compatibility)
+    if (m_parser->compatibilityMode() >= ParseSession::Java15Compatibility)
         return Parser::Token_AT;
     else {
         m_parser->reportProblem(m_parser, Parser::Error,
@@ -205,7 +205,7 @@ FloatingPoint   {Float1}|{Float2}|{Float3}|{Float4}|{HexFloat1}|{HexFloat2}
 ">>>"           return Parser::Token_UNSIGNED_RSHIFT;
 ">>>="          return Parser::Token_UNSIGNED_RSHIFT_ASSIGN;
 "..."           {
-    if ( m_parser->compatibilityMode() >= Parser::Java15Compatibility )
+    if ( m_parser->compatibilityMode() >= ParseSession::Java15Compatibility )
         return Parser::Token_ELLIPSIS;
     else {
         m_parser->reportProblem(m_parser, Parser::Error,
@@ -220,7 +220,7 @@ FloatingPoint   {Float1}|{Float2}|{Float3}|{Float4}|{HexFloat1}|{HexFloat2}
 
 "abstract"      return Parser::Token_ABSTRACT;
 "assert"        {
-    if ( m_parser->compatibilityMode() >= Parser::Java14Compatibility )
+    if ( m_parser->compatibilityMode() >= ParseSession::Java14Compatibility )
         return Parser::Token_ASSERT;
     else
         return Parser::Token_IDENTIFIER;
@@ -243,7 +243,7 @@ FloatingPoint   {Float1}|{Float2}|{Float3}|{Float4}|{HexFloat1}|{HexFloat2}
 "double"        return Parser::Token_DOUBLE;
 "else"          return Parser::Token_ELSE;
 "enum"          {
-    if ( m_parser->compatibilityMode() >= Parser::Java15Compatibility )
+    if ( m_parser->compatibilityMode() >= ParseSession::Java15Compatibility )
         return Parser::Token_ENUM;
     else
         return Parser::Token_IDENTIFIER;

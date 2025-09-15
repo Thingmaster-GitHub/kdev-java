@@ -29,9 +29,9 @@ namespace java
 {
 
 ParseSession::ParseSession()
-    : memoryPool( new Parser::memoryPoolType )
-    , tokenStream( new KDevPG::TokenStream )
-    , compatibilityMode( Parser::Java15Compatibility )
+    : tokenStream( new KDevPG::TokenStream )
+    ,compatibilityMode( Java15Compatibility )
+    ,memoryPool( new memoryPoolType )
 {
 }
 
