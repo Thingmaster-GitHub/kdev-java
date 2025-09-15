@@ -26,7 +26,7 @@
 
 #include "helpers.h"
 
-//#define DEBUG_SEARCH2
+#define DEBUG_SEARCH2
 
 using namespace KDevelop;
 
@@ -213,9 +213,10 @@ void TopDUContext::findJavaDeclarationsInternal( const SearchItem::PtrList& iden
       PersistentSymbolTable::self().visitFilteredDeclarations(
         id, recursiveImportIndices(),
         [&](const IndexedDeclaration& iDecl) {
+
           Declaration* aliasDecl = iDecl.data();
           if (!aliasDecl) {
-            return PersistentSymbolTable::VisitorState::Continue; // or Break if you want to stop
+            return PersistentSymbolTable::VisitorState::Continue;
           }
 
           //TODO add code here that I removed if it doesn't work!
@@ -253,13 +254,14 @@ void TopDUContext::findJavaDeclarationsInternal( const SearchItem::PtrList& iden
 #endif
           accept(aliasDecl);
         });
-      }
+      #ifdef DEBUG_SEARCH2
+      qDebug() << "Finished" << id.toString();
+      #endif
     }
-
-#ifdef DEBUG_SEARCH2
-    qDebug() << "Finished" << id.toString();
-#endif
   }
 }
+}
+
+
 
 

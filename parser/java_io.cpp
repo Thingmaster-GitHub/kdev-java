@@ -25,28 +25,88 @@
 
 #include "javaparser.h"
 #include "javalexer.h"
+#include "parsesession.h"
+
+
+#include <language/duchain/duchain.h>
+#include <language/duchain/topducontext.h>
+#include <language/duchain/duchainlock.h>
+#include <language/editor/documentrange.h>
+
+#include <language/duchain/problem.h>
+
+#include <parsesession.h>
 
 #include <iostream>
+
 
 #include <QDebug>
 
 // void print_token_environment(java::Parser* parser);
-
+using namespace KDevelop;
 
 namespace java
 {
 
-void Parser::reportProblem( Parser::ProblemType type, const QString& message )
+void Parser::reportProblem(java::Parser *parser, Parser::ProblemType type, const QString& message )
 {
+  IProblem::Severity severity;
   if (type == Error) {
     qDebug() << "** ERROR:" << message;
+    severity = IProblem::Severity::Error;
   }
   else if (type == Warning) {
     qDebug() << "** WARNING:" << message;
+    severity = IProblem::Severity::Warning;
   }
   else if (type == Info) {
     qDebug() << "** Info:" << message;
+    severity = IProblem::Severity::Hint;
   }
+
+  auto *p = new Problem();
+  p->setSeverity(severity);
+  p->setSource(IProblem::DUChainBuilder);
+  p->setDescription(message);
+
+  KDevPG::TokenStream::TokenStreamBase::Token token = parser->tokenStream->curr();//TODO SOMETHING WITH THIS
+
+  //add data must be retrieved from the parser
+  qint64 sLine,sColumn,eLine,eColumn;
+
+  qDebug()<<token.begin;
+  qDebug()<<token.end;
+
+
+  parser->tokenStream->locationTable()->positionAt(token.begin,&sLine,&sColumn);
+  parser->tokenStream->locationTable()->positionAt(token.end,&eLine,&eColumn);
+
+  ParseSession().positionAt(token.end);
+  qDebug()<<"start line: "<< sLine;
+  qDebug()<<"start column: "<< sColumn;
+  qDebug()<<"end line: "<< eLine;
+  qDebug()<<"end column: "<< eColumn;
+
+  p->setFinalLocation(DocumentRange(parser->m_document,
+                                    KTextEditor::Range(sLine,sColumn,eLine,eColumn)));
+  qDebug()<<parser->m_document;
+  qDebug()<<KTextEditor::Range(sLine,sColumn,eLine,eColumn);
+
+  DUChainReadLocker lock(DUChain::lock());
+  TopDUContext* top = DUChain::self()->chainForDocument(parser->m_document);
+  qDebug()<<top;
+  if(top)
+  {
+    DUChainWriteLocker lock(DUChain::lock());
+
+    qDebug()<<ProblemPointer(p);
+    qDebug()<<p;
+    top->addProblem(ProblemPointer(p));
+  }else{
+    qDebug()<<"chain for "<<parser->m_document<<" not found!";
+  }
+
+
 }
 
 
@@ -54,7 +114,7 @@ void Parser::reportProblem( Parser::ProblemType type, const QString& message )
 void Parser::expectedToken(int /*expected*/, qint64 /*where*/, const QString& name)
 {
   // print_token_environment(this);
-  reportProblem(
+  reportProblem(this,
     Parser::Error,
     QString("Expected token ``%1''").arg(name)
       //+ QString(" instead of ``%1''").arg(current_token_text)
@@ -64,7 +124,7 @@ void Parser::expectedToken(int /*expected*/, qint64 /*where*/, const QString& na
 void Parser::expectedSymbol(int /*expected_symbol*/, const QString& name)
 {
   // print_token_environment(this);
-  reportProblem(
+  reportProblem(this,
     Parser::Error,
     QString("Expected symbol ``%1''").arg(name)
       //+ QString(" instead of ``%1''").arg(current_token_text)

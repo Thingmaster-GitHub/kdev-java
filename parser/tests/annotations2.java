@@ -2,4 +2,4 @@
 // for the parser. This is now solved with the lookahead function hack.
 
 @SomePredefinedAnnotation
-public class TimeTravel { /* */ }
+public class TimeTravel { /* */}

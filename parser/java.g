@@ -88,6 +88,8 @@ class DUContext;
 %parser_declaration_header "QtCore/QString"
 %parser_declaration_header "QtCore/QDebug"
 %parser_declaration_header "kdev-pg-list.h"
+%parser_declaration_header "serialization/indexedstring.h"
+%parser_declaration_header "sessionstore.h"
 
 %export_macro "KDEVJAVAPARSER_EXPORT"
 %export_macro_header "javaparser_export.h"
@@ -244,12 +246,15 @@ class DUContext;
   Parser::JavaCompatibilityMode compatibilityMode();
   void setCompatibilityMode( Parser::JavaCompatibilityMode mode );
 
+  void setDocument(KDevelop::IndexedString document);
+  void setContents(char *contents);
+
   enum ProblemType {
       Error,
       Warning,
       Info
   };
-  void reportProblem( Parser::ProblemType type, const QString& message );
+  void reportProblem(java::Parser *parser, Parser::ProblemType type, const QString& message );
 :]
 
 %parserclass (private declaration)
@@ -264,6 +269,10 @@ class DUContext;
       int ltCounter;
   };
   ParserState m_state;
+
+  const char *m_contents;
+
+  KDevelop::IndexedString m_document;
 :]
 
 %parserclass (constructor)
@@ -600,7 +609,7 @@ class DUContext;
               modifiers, type, variableDeclaratorSequence
             ]
           |
-            0 [: reportProblem( Error,
+            0 [: reportProblem(this, Error,
                    "Expected method declaration after type parameter list" );
                :]
             SEMICOLON -- not really needed, but avoids conflict warnings
@@ -651,7 +660,7 @@ class DUContext;
            modifiers, type, variableDeclaratorSequence
          ]
        |
-         0 [: reportProblem( Error,
+         0 [: reportProblem(this, Error,
                 "Expected method declaration after type parameter list" );
             :]
          SEMICOLON -- not really needed, but avoids conflict warnings
@@ -694,7 +703,7 @@ class DUContext;
            modifiers, type, variableDeclaratorSequence
          ]
        |
-         0 [: reportProblem( Error,
+         0 [: reportProblem(this, Error,
                 "Expected method declaration after type parameter list" );
             :]
          SEMICOLON -- not really needed, but avoids conflict warnings
@@ -860,7 +869,7 @@ class DUContext;
    -- if we are at the "top level" of nested typeParameters productions
    [: if (currentLtLevel == 0 && m_state.ltCounter != currentLtLevel ) {
         if (!mBlockErrors) {
-          reportProblem(Error, "The amount of closing ``>'' characters is incorrect");
+          reportProblem(this,Error, "The amount of closing ``>'' characters is incorrect");
         }
         return false;
       }
@@ -889,7 +898,7 @@ class DUContext;
    -- if we are at the "top level" of nested typeArguments productions
    [: if (currentLtLevel == 0 && m_state.ltCounter != currentLtLevel ) {
         if (!mBlockErrors) {
-          reportProblem(Error, "The amount of closing ``>'' characters is incorrect");
+          reportProblem(this,Error, "The amount of closing ``>'' characters is incorrect");
         }
         return false;
       }
@@ -910,7 +919,7 @@ class DUContext;
    -- if we are at the "top level" of nested typeArguments productions
    [: if (currentLtLevel == 0 && m_state.ltCounter != currentLtLevel ) {
         if (!mBlockErrors) {
-          reportProblem(Error, "The amount of closing ``>'' characters is incorrect");
+          reportProblem(this,Error, "The amount of closing ``>'' characters is incorrect");
         }
         return false;
       }
@@ -1825,7 +1834,8 @@ class DUContext;
 [:
 #include "javalexer.h"
 #include <QString>
-
+#include <serialization/indexedstring.h>
+#include "parsesession.h"
 namespace java
 {
 
@@ -1860,7 +1870,14 @@ void Parser::setCompatibilityMode( Parser::JavaCompatibilityMode mode )
 {
     m_compatibilityMode = mode;
 }
-
+void Parser::setDocument(KDevelop::IndexedString document)
+{
+  m_document = document;
+}
+void Parser::setContents(char *contents)
+{
+  m_contents = contents;
+}
 
 Parser::ParserState *Parser::copyCurrentState()
 {

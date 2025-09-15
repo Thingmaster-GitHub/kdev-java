@@ -193,7 +193,7 @@ void DumpChain::visitNode(AstNode *node)
   QString indentation;
   for( int a = 0; a < indent; a++ )
     indentation += "| ";
-
+  qDebug()<<"1";
   if (node) {
     if (m_editor) {
       QString nodeText;
@@ -213,11 +213,15 @@ void DumpChain::visitNode(AstNode *node)
               << "[" << node->startToken << "," << node->endToken << "]" << Qt::endl;
     }
   }
-
+  qDebug()<<"2";
   ++indent;
-  DefaultVisitor::visitNode(node);
+  qDebug()<<"3";
+  //DefaultVisitor::visitNode(node);
+  //TODO fix this if it's needed
+  //crashes program currently
+  qDebug()<<"4";
   --indent;
-
+  qDebug()<<"5";
   if (node) {
     if (m_editor) {
       qDebug() << indentation << "/" << names[node->kind - 1000]
@@ -228,6 +232,7 @@ void DumpChain::visitNode(AstNode *node)
               << "[" << node->startToken << "," << node->endToken << ']' << Qt::endl;
     }
   }
+  qDebug()<<"6";
 }
 
 DumpChain::~ DumpChain( )

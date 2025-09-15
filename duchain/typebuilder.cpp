@@ -22,7 +22,7 @@
 #include "parsesession.h"
 #include "declarationbuilder.h"
 
-//#define DEBUG
+#define DEBUG
 
 #ifdef DEBUG
 #define ifDebug(x) x;

@@ -77,7 +77,9 @@ public class Lollipop { }
 
 // Single-element array-valued single-element annotation
 @Endorsers("Epicurus")
-public class Pleasure { }
+public class Pleasure {
+
+}
 
 // Single-element complex annotation
 @Author(@Name(first = "Joe", last = "Hacker"))

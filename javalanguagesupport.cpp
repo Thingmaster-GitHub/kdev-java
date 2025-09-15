@@ -57,8 +57,7 @@ K_PLUGIN_FACTORY_WITH_JSON(KDevJavaSupportFactory, "kdevjavasupport.json", regis
 
 JavaLanguageSupport* JavaLanguageSupport::s_self = 0;
 
-JavaLanguageSupport::JavaLanguageSupport( QObject* parent,
-                                          const KPluginMetaData& metaData )
+JavaLanguageSupport::JavaLanguageSupport( QObject* parent, const KPluginMetaData& metaData)
         : KDevelop::IPlugin(QStringLiteral("kdevjavasupport"), parent,metaData)
         , KDevelop::ILanguageSupport()
         , m_allJavaContext(0)

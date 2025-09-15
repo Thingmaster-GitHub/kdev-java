@@ -26,7 +26,7 @@
 
 #include <QUrl>
 #include <language/backgroundparser/parsejob.h>
-
+#include "parser/parsesession.h"
 // from the parser subdirectory
 #include <parser/javaast.h>
 
@@ -46,7 +46,6 @@ public:
     ParseJob( const KDevelop::IndexedString &url, KDevelop::ILanguageSupport* languageSupport );
 
     virtual ~ParseJob();
-
     JavaLanguageSupport* java() const;
 
     ParseSession* parseSession() const;

@@ -1,6 +1,7 @@
 // Mostly as an exercise to the lexer, but contains some difficulties
 // (e.g. variable declarations) that can be tricky for the parser too.
 
+
 class Literals
 {
     void integers()
@@ -77,7 +78,7 @@ class Literals
         c = '\u0007';
         c = '\n';
         c = '\'';
-        //c = '\';  // invalid!
+        c = '\';  // invalid!
         c = '%';
         c = 'Ö';
     }

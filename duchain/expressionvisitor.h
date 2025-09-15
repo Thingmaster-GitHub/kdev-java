@@ -34,7 +34,7 @@ class KDEVJAVAPARSER_EXPORT ExpressionVisitor : public ExpressionVisitorBase
 {
   public:
     ExpressionVisitor(EditorIntegrator* editor);
-    
+
   protected:
     KDevelop::AbstractType::Ptr openTypeFromName(KDevelop::QualifiedIdentifier id, bool needClass);
     
@@ -51,7 +51,7 @@ class KDEVJAVAPARSER_EXPORT ExpressionVisitor : public ExpressionVisitorBase
 
     const KDevelop::DUContext* currentContext() const { return m_currentContext; }
     EditorIntegrator* editor() const { return m_editor; }
-  private:
+
     const KDevelop::DUContext* m_currentContext;
     EditorIntegrator* m_editor;
 };

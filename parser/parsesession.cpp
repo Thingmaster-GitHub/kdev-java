@@ -31,7 +31,7 @@ namespace java
 ParseSession::ParseSession()
     : memoryPool( new Parser::memoryPoolType )
     , tokenStream( new KDevPG::TokenStream )
-    , compatibilityMode( Parser::Java21Compatibility )
+    , compatibilityMode( Parser::Java15Compatibility )
 {
 }
 
@@ -58,7 +58,6 @@ const char *ParseSession::contents() const
 {
     return m_contents.constData();
 }
-
 void ParseSession::setContents( const QByteArray & contents )
 {
     m_contents = contents;

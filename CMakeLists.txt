@@ -10,6 +10,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core Widgets Test Qml Quick)
 find_package(KF6I18n REQUIRED)
 find_package(KF6KIO REQUIRED)
 find_package(KDevPlatform REQUIRED)
+find_package(KF6ThreadWeaver REQUIRED)
 
 
 

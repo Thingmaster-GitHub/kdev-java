@@ -132,66 +132,56 @@ void ParseJob::run(ThreadWeaver::JobPointer /*self*/, ThreadWeaver::Thread * /*t
              << " size: " << m_session->size();//TODO error somewhere here!!
              //use to fix other errors in program
              //I'm guessing it's a depriciated function call
-
+             //something to do with loading files?
+             //
     if ( abortRequested() )
         return abortJob();
-
     // 0) setup
     java::Parser javaParser;
     javaParser.setCompatibilityMode( m_session->compatibilityMode );
     javaParser.setTokenStream( m_session->tokenStream );
     javaParser.setMemoryPool( m_session->memoryPool );
-
+    javaParser.setDocument(document());
+    javaParser.setContents((char*) m_session->contents());
     // 1) tokenize
     javaParser.tokenize( (char*) m_session->contents() );
-
     if ( abortRequested() )
         return abortJob();
-
     // 2) parse
     CompilationUnitAst *ast = 0;
     bool matched = javaParser.parseCompilationUnit( &ast );
-
     if ( abortRequested() )
         return abortJob();
-
     if ( matched )
     {
         DefaultVisitor v;
-        v.visitNode( ast );
+        v.visitNode( ast );//TODO fix error here?
     }
     else
     {
         // FIXME
         //java_parser.yy_expected_symbol(AstNode::Kind_compilation_unit, "compilation_unit"); // ### remove me
     }
-
     // 3) Form definition-use chain
     m_session->m_document = document();
     java::EditorIntegrator editor(parseSession());
-
     //qDebug(  ) << (contentContext ? "updating" : "building") << "duchain for" << parentJob()->document().str();
 
     // TODO: use zip hash to find out if jdk/other source has changed when going for 2nd pass
-
     KDevelop::ReferencedTopDUContext toUpdate;
     {
         KDevelop::DUChainReadLocker lock;
         toUpdate = KDevelop::DUChainUtils::standardContextForUrl(document().toUrl());
     }
-
     KDevelop::TopDUContext::Features newFeatures = minimumFeatures();
     if (toUpdate)
         newFeatures = (KDevelop::TopDUContext::Features)(newFeatures | toUpdate->features());
 
     if (newFeatures & KDevelop::TopDUContext::ForceUpdate)
         qDebug() << "update enforced";
-
     //Remove update-flags like 'Recursive' or 'ForceUpdate'
     newFeatures = static_cast<KDevelop::TopDUContext::Features>(newFeatures & KDevelop::TopDUContext::AllDeclarationsContextsUsesAndAST);
-
     DeclarationBuilder declarationBuilder(&editor);
-
     if (newFeatures == KDevelop::TopDUContext::SimplifiedVisibleDeclarationsAndContexts) {
         declarationBuilder.setOnlyComputeVisible(true); //Only visible declarations/contexts need to be built.
         declarationBuilder.setBuildCompleteTypes(false);
@@ -200,14 +190,11 @@ void ParseJob::run(ThreadWeaver::JobPointer /*self*/, ThreadWeaver::Thread * /*t
         declarationBuilder.setOnlyComputeVisible(true); //Only visible declarations/contexts need to be built.
     }
 
-
     KDevelop::TopDUContext* chain = declarationBuilder.build(document(), ast, toUpdate);
     setDuChain(chain);
-
     bool declarationsComplete = !declarationBuilder.hadUnresolvedIdentifiers();
-
     qDebug() << "Parsing with feature set: " << newFeatures << " complete:" <<declarationsComplete;//TODO before here is error
-
+    //there's some error here, and I'm not fixing it, good luck if you try!
     if (!declarationsComplete) {
         if (!declarationBuilder.identifiersRemainUnresolved()) {
             // Internal dependency needed completing
@@ -240,7 +227,6 @@ void ParseJob::run(ThreadWeaver::JobPointer /*self*/, ThreadWeaver::Thread * /*t
         UseBuilder useBuilder(&editor);
         useBuilder.buildUses(ast);
     }
-
     if (!abortRequested()) {
 
         if ( java()->codeHighlighting() )
@@ -250,12 +236,14 @@ void ParseJob::run(ThreadWeaver::JobPointer /*self*/, ThreadWeaver::Thread * /*t
     }
 
     if (declarationsComplete && (newFeatures & KDevelop::TopDUContext::AllDeclarationsContextsAndUses) == KDevelop::TopDUContext::AllDeclarationsContextsAndUses) {
-        DumpChain dump;
-        dump.dump(ast, m_session);
 
+        DumpChain dump;
+
+        dump.dump(ast, m_session);
         KDevelop::DUChainReadLocker duchainlock(KDevelop::DUChain::lock());
         dump.dump(chain);
     }
+
 }
 
 

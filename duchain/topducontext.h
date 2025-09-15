@@ -41,6 +41,7 @@ class TopDUContext : public KDevelop::TopDUContext
     explicit TopDUContext(const KDevelop::IndexedString& url, const KDevelop::RangeInRevision& range, KDevelop::ParsingEnvironmentFile* file = 0);
     explicit TopDUContext(TopDUContextData& data);
 
+
   enum {
     Identity = 31
   };
