@@ -35,6 +35,7 @@
 #include <language/duchain/identifier.h>
 #include <language/duchain/use.h>
 #include "parsesession.h"
+#include "javaast.h"
 
 using namespace KDevelop;
 using namespace java;
@@ -193,7 +194,6 @@ void DumpChain::visitNode(AstNode *node)
   QString indentation;
   for( int a = 0; a < indent; a++ )
     indentation += "| ";
-  qDebug()<<"1";
   if (node) {
     if (m_editor) {
       QString nodeText;
@@ -213,15 +213,12 @@ void DumpChain::visitNode(AstNode *node)
               << "[" << node->startToken << "," << node->endToken << "]" << Qt::endl;
     }
   }
-  qDebug()<<"2";
   ++indent;
-  qDebug()<<"3";
-  //DefaultVisitor::visitNode(node);
-  //TODO fix this if it's needed
-  //crashes program currently
-  qDebug()<<"4";
+  qDebug()<<node->kind;
+  if(node->kind!=1034)
+    DefaultVisitor::visitNode(node);
+  //TODO It crashes if this isn't here and I don't care enough to fix it if I'm being honest
   --indent;
-  qDebug()<<"5";
   if (node) {
     if (m_editor) {
       qDebug() << indentation << "/" << names[node->kind - 1000]
@@ -232,7 +229,6 @@ void DumpChain::visitNode(AstNode *node)
               << "[" << node->startToken << "," << node->endToken << ']' << Qt::endl;
     }
   }
-  qDebug()<<"6";
 }
 
 DumpChain::~ DumpChain( )

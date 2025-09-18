@@ -48,66 +48,71 @@ using namespace KDevelop;
 namespace java
 {
 
-void Parser::reportProblem(java::Parser *parser, Parser::ProblemType type, const QString& message )
-{
-  IProblem::Severity severity;
-  if (type == Error) {
-    qDebug() << "** ERROR:" << message;
-    severity = IProblem::Severity::Error;
-  }
-  else if (type == Warning) {
-    qDebug() << "** WARNING:" << message;
-    severity = IProblem::Severity::Warning;
-  }
-  else if (type == Info) {
-    qDebug() << "** Info:" << message;
-    severity = IProblem::Severity::Hint;
-  }
-
-  auto *p = new Problem();
-  p->setSeverity(severity);
-  p->setSource(IProblem::DUChainBuilder);
-  p->setDescription(message);
-
-  KDevPG::TokenStream::TokenStreamBase::Token token = parser->tokenStream->curr();//TODO SOMETHING WITH THIS
-
-  //add data must be retrieved from the parser
-  qint64 sLine,sColumn,eLine,eColumn;
-
-  qDebug()<<token.begin;
-  qDebug()<<token.end;
-
-
-  parser->tokenStream->locationTable()->positionAt(token.begin,&sLine,&sColumn);
-  parser->tokenStream->locationTable()->positionAt(token.end,&eLine,&eColumn);
-
-  ParseSession().positionAt(token.end);
-  qDebug()<<"start line: "<< sLine;
-  qDebug()<<"start column: "<< sColumn;
-  qDebug()<<"end line: "<< eLine;
-  qDebug()<<"end column: "<< eColumn;
-
-  p->setFinalLocation(DocumentRange(parser->m_document,
-                                    KTextEditor::Range(sLine,sColumn,eLine,eColumn)));
-  qDebug()<<parser->m_document;
-  qDebug()<<KTextEditor::Range(sLine,sColumn,eLine,eColumn);
-
-  DUChainReadLocker lock(DUChain::lock());
-  TopDUContext* top = DUChain::self()->chainForDocument(parser->m_document);
-  qDebug()<<top;
-  if(top)
+  void Parser::reportProblem(java::Parser *parser, Parser::ProblemType type, const QString& message )
   {
-    DUChainWriteLocker lock(DUChain::lock());
 
-    qDebug()<<ProblemPointer(p);
-    qDebug()<<p;
-    top->addProblem(ProblemPointer(p));
-  }else{
-    qDebug()<<"chain for "<<parser->m_document<<" not found!";
+    IProblem::Severity severity;
+    if (type == Error) {
+      qDebug() << "** ERROR:" << message;
+      severity = IProblem::Severity::Error;
+    }
+    else if (type == Warning) {
+      qDebug() << "** WARNING:" << message;
+      severity = IProblem::Severity::Warning;
+    }
+    else if (type == Info) {
+      qDebug() << "** Info:" << message;
+      severity = IProblem::Severity::Hint;
+    }
+    auto *p = new Problem();
+    p->setSeverity(severity);
+    p->setSource(IProblem::Parser);
+    p->setDescription(message);
+    KDevPG::TokenStream::TokenStreamBase::Token token = parser->m_session->tokenStream->curr();
+    //data must be retrieved from the parser
+    int sLine,sColumn,eLine,eColumn;
+    CursorInRevision begin = parser->m_session->positionAt(token.begin);
+
+
+    CursorInRevision end = parser->m_session->positionAt(token.end);
+
+    sLine=begin.line;
+    sColumn=begin.column;
+    eLine=end.line;
+    eColumn=end.column;
+    p->setFinalLocation(DocumentRange(parser->m_document,
+                                      KTextEditor::Range(sLine,sColumn,eLine,eColumn)));
+    TopDUContext* top = DUChain::self()->chainForDocument(parser->m_document);
+    if(top)
+    {
+      if(parser->m_session->firstError){
+        parser->m_session->firstError=false;
+        qDebug()<<"clearing problems";
+        DUChainWriteLocker lock(DUChain::lock());
+        top->clearProblems();
+      }
+
+      if(parser->m_problems.size()==0){
+        qDebug()<<p;
+        qDebug()<<"hey it ran!";
+        DUChainWriteLocker lock(DUChain::lock());
+        top->addProblem(ProblemPointer(p));
+      }else{
+        parser->m_problems.append(ProblemPointer(p));
+
+        DUChainWriteLocker lock(DUChain::lock());
+        while(parser->m_problems.size()){
+          top->addProblem(parser->m_problems[0]);
+        }
+        parser->m_problems.clear();
+      }
+    }else{
+      parser->m_problems.append(ProblemPointer(p));
+      qDebug()<<"chain for "<<parser->m_document<<" not found!";
+    }
+
+
   }
-
-
-}
 
 
 // custom error recovery

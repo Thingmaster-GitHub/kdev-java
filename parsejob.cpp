@@ -129,11 +129,7 @@ void ParseJob::run(ThreadWeaver::JobPointer /*self*/, ThreadWeaver::Thread * /*t
     qDebug() << "===-- PARSING --===> "
              << document().str()
              << " <== readFromDisk: " << m_readFromDisk
-             << " size: " << m_session->size();//TODO error somewhere here!!
-             //use to fix other errors in program
-             //I'm guessing it's a depriciated function call
-             //something to do with loading files?
-             //
+             << " size: " << m_session->size();
     if ( abortRequested() )
         return abortJob();
     // 0) setup
@@ -143,11 +139,22 @@ void ParseJob::run(ThreadWeaver::JobPointer /*self*/, ThreadWeaver::Thread * /*t
     javaParser.setMemoryPool( m_session->memoryPool );
     javaParser.setDocument(document());
     javaParser.setContents((char*) m_session->contents());
-    // 1) tokenize
+    javaParser.setSession(m_session);//curently this adds a duplicate of all the contents that were just added, I don't want to bother fixing it right now
+    //TODO add better coding practices for stored data
+    //also I know I added the m_contents and m_document for nothing now
+
+    // 1) clear problems
+    {
+        //I can't figure this out correctly
+        //fix this if you know how kdev-qt-pqp actually works I guess idk
+        m_session->firstError=true;
+    }
+    qDebug()<<"after write lock";
+    // 2) tokenize
     javaParser.tokenize( (char*) m_session->contents() );
     if ( abortRequested() )
         return abortJob();
-    // 2) parse
+    // 3) parse
     CompilationUnitAst *ast = 0;
     bool matched = javaParser.parseCompilationUnit( &ast );
     if ( abortRequested() )
@@ -162,7 +169,7 @@ void ParseJob::run(ThreadWeaver::JobPointer /*self*/, ThreadWeaver::Thread * /*t
         // FIXME
         //java_parser.yy_expected_symbol(AstNode::Kind_compilation_unit, "compilation_unit"); // ### remove me
     }
-    // 3) Form definition-use chain
+    // 4) Form definition-use chain
     m_session->m_document = document();
     java::EditorIntegrator editor(parseSession());
     //qDebug(  ) << (contentContext ? "updating" : "building") << "duchain for" << parentJob()->document().str();
@@ -192,9 +199,11 @@ void ParseJob::run(ThreadWeaver::JobPointer /*self*/, ThreadWeaver::Thread * /*t
 
     KDevelop::TopDUContext* chain = declarationBuilder.build(document(), ast, toUpdate);
     setDuChain(chain);
+
+
+
     bool declarationsComplete = !declarationBuilder.hadUnresolvedIdentifiers();
-    qDebug() << "Parsing with feature set: " << newFeatures << " complete:" <<declarationsComplete;//TODO before here is error
-    //there's some error here, and I'm not fixing it, good luck if you try!
+    qDebug() << "Parsing with feature set: " << newFeatures << " complete:" <<declarationsComplete;
     if (!declarationsComplete) {
         if (!declarationBuilder.identifiersRemainUnresolved()) {
             // Internal dependency needed completing
@@ -235,6 +244,7 @@ void ParseJob::run(ThreadWeaver::JobPointer /*self*/, ThreadWeaver::Thread * /*t
         }
     }
 
+
     if (declarationsComplete && (newFeatures & KDevelop::TopDUContext::AllDeclarationsContextsAndUses) == KDevelop::TopDUContext::AllDeclarationsContextsAndUses) {
 
         DumpChain dump;
@@ -243,7 +253,13 @@ void ParseJob::run(ThreadWeaver::JobPointer /*self*/, ThreadWeaver::Thread * /*t
         KDevelop::DUChainReadLocker duchainlock(KDevelop::DUChain::lock());
         dump.dump(chain);
     }
-
+    //realized if it doesn't find any problems, it never clears them, so here
+    KDevelop::TopDUContext* top = KDevelop::DUChain::self()->chainForDocument(document());
+    if(m_session->firstError){
+        qDebug()<<"clearing problems";
+        KDevelop::DUChainWriteLocker lock(KDevelop::DUChain::lock());
+        top->clearProblems();
+    }
 }
 
 

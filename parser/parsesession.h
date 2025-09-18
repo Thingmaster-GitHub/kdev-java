@@ -102,7 +102,8 @@ public:
     node->kind = T::KIND;
     return node;
   }
-
+  //fix if you want
+  bool firstError;
 private:
   QByteArray m_contents;
 };

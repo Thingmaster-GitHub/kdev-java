@@ -78,7 +78,7 @@ class Literals
         c = '\u0007';
         c = '\n';
         c = '\'';
-        c = '\';  // invalid!
+        //c = '\';  // invalid!
         c = '%';
         c = 'Ö';
     }

@@ -87,6 +87,7 @@ class DUContext;
 
 %parser_declaration_header "QtCore/QString"
 %parser_declaration_header "QtCore/QDebug"
+%parser_declaration_header "language/duchain/problem.h"
 %parser_declaration_header "kdev-pg-list.h"
 %parser_declaration_header "serialization/indexedstring.h"
 %parser_declaration_header "parsesession.h"
@@ -273,6 +274,8 @@ class DUContext;
   KDevelop::IndexedString m_document;
 
   ParseSession *m_session;
+
+  QList<QExplicitlySharedDataPointer<KDevelop::Problem>> m_problems;
 :]
 
 %parserclass (constructor)
@@ -342,10 +345,10 @@ class DUContext;
    -- (both can start with annotations) which requires arbitrary-length LL(k).
    -- The following construct uses backtracking with try/rollback to work
    -- around this issue.
-   try/rollback(packageDeclaration=packageDeclaration) catch(0)
-   try/recover(#importDeclaration=importDeclaration)*
-   try/recover(#typeDeclaration=typeDeclaration)*
--> compilationUnit ;;
+      try/rollback(packageDeclaration=packageDeclaration) catch(0)
+      try/recover(#importDeclaration=importDeclaration)*
+      try/recover(#typeDeclaration=typeDeclaration)*
+      -> compilationUnit ;;
 
 
 
