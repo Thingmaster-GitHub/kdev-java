@@ -93,8 +93,6 @@ namespace java
       }
 
       if(parser->m_problems.size()==0){
-        qDebug()<<p;
-        qDebug()<<"hey it ran!";
         DUChainWriteLocker lock(DUChain::lock());
         top->addProblem(ProblemPointer(p));
       }else{

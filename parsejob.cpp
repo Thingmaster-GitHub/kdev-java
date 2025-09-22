@@ -180,6 +180,7 @@ void ParseJob::run(ThreadWeaver::JobPointer /*self*/, ThreadWeaver::Thread * /*t
         KDevelop::DUChainReadLocker lock;
         toUpdate = KDevelop::DUChainUtils::standardContextForUrl(document().toUrl());
     }
+
     KDevelop::TopDUContext::Features newFeatures = minimumFeatures();
     if (toUpdate)
         newFeatures = (KDevelop::TopDUContext::Features)(newFeatures | toUpdate->features());
@@ -188,6 +189,7 @@ void ParseJob::run(ThreadWeaver::JobPointer /*self*/, ThreadWeaver::Thread * /*t
         qDebug() << "update enforced";
     //Remove update-flags like 'Recursive' or 'ForceUpdate'
     newFeatures = static_cast<KDevelop::TopDUContext::Features>(newFeatures & KDevelop::TopDUContext::AllDeclarationsContextsUsesAndAST);
+
     DeclarationBuilder declarationBuilder(&editor);
     if (newFeatures == KDevelop::TopDUContext::SimplifiedVisibleDeclarationsAndContexts) {
         declarationBuilder.setOnlyComputeVisible(true); //Only visible declarations/contexts need to be built.
