@@ -256,12 +256,14 @@ void ParseJob::run(ThreadWeaver::JobPointer /*self*/, ThreadWeaver::Thread * /*t
         dump.dump(chain);
     }
     //realized if it doesn't find any problems, it never clears them, so here
-    KDevelop::TopDUContext* top = KDevelop::DUChain::self()->chainForDocument(document());
     if(m_session->firstError){
         qDebug()<<"clearing problems";
         KDevelop::DUChainWriteLocker lock(KDevelop::DUChain::lock());
-        top->clearProblems();
+        chain->clearProblems();
+
     }
+
+    KDevelop::DUChain::self()->emitUpdateReady(document(), duChain());
 }
 
 
