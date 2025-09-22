@@ -149,7 +149,6 @@ void ParseJob::run(ThreadWeaver::JobPointer /*self*/, ThreadWeaver::Thread * /*t
         //fix this if you know how kdev-qt-pqp actually works I guess idk
         m_session->firstError=true;
     }
-    qDebug()<<"after write lock";
     // 2) tokenize
     javaParser.tokenize( (char*) m_session->contents() );
     if ( abortRequested() )
@@ -186,10 +185,10 @@ void ParseJob::run(ThreadWeaver::JobPointer /*self*/, ThreadWeaver::Thread * /*t
         newFeatures = (KDevelop::TopDUContext::Features)(newFeatures | toUpdate->features());
 
     if (newFeatures & KDevelop::TopDUContext::ForceUpdate)
-        qDebug() << "update enforced";
+        qDebug() << "update enforced";//crashes after here
+
     //Remove update-flags like 'Recursive' or 'ForceUpdate'
     newFeatures = static_cast<KDevelop::TopDUContext::Features>(newFeatures & KDevelop::TopDUContext::AllDeclarationsContextsUsesAndAST);
-
     DeclarationBuilder declarationBuilder(&editor);
     if (newFeatures == KDevelop::TopDUContext::SimplifiedVisibleDeclarationsAndContexts) {
         declarationBuilder.setOnlyComputeVisible(true); //Only visible declarations/contexts need to be built.
@@ -198,13 +197,18 @@ void ParseJob::run(ThreadWeaver::JobPointer /*self*/, ThreadWeaver::Thread * /*t
     } else if (newFeatures == KDevelop::TopDUContext::VisibleDeclarationsAndContexts) {
         declarationBuilder.setOnlyComputeVisible(true); //Only visible declarations/contexts need to be built.
     }
-
+    qDebug()<<"before";
+    //checking to see if ast is valid
+    if(!ast->typeDeclarationSequence){
+        qDebug()<<"typeDeclarationSequence is not a valid pointer!";
+        return;
+    }
     KDevelop::TopDUContext* chain = declarationBuilder.build(document(), ast, toUpdate);
+    qDebug()<<"after";
     setDuChain(chain);
 
-
-
     bool declarationsComplete = !declarationBuilder.hadUnresolvedIdentifiers();
+    //and before here
     qDebug() << "Parsing with feature set: " << newFeatures << " complete:" <<declarationsComplete;
     if (!declarationsComplete) {
         if (!declarationBuilder.identifiersRemainUnresolved()) {
